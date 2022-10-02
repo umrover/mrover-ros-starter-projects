@@ -24,6 +24,10 @@ def get_drive_command(
                                     in order to drive forward. When below, turn in place.
     :return:                        Rover drive effort command.
     """
+    print(f"target_pos = {target_pos}")
+    print(f"rover_pose = {rover_pose}")
+    print(f"completion_thresh = {completion_thresh}")
+    print(f"turn_in_place_thres = {turn_in_place_thresh}")
     if not (0.0 < turn_in_place_thresh < 1.0):
         raise ValueError(f"Argument {turn_in_place_thresh} should be between 0 and 1")
     rover_pos = rover_pose.position

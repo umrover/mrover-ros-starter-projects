@@ -47,22 +47,40 @@ namespace mrover {
         // hint: you can access the raw image (cv::Mat) with image->image
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
 
+        // Image is the input and mTagCorners and mTagIds are the output
         tags.clear(); // Clear old tags in output vector
 
-        // TODO: remove below & implement me!
-        (void) image;
+        cv::aruco::detectMarkers(image->image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+        for(int i = 0; i < mTagCorners.size(); ++i){
+            float metric = getClosenessMetricFromTagCorners(image->image, mTagCorners[i]);
+            std::pair<float, float> center = getCenterFromTagCorners(mTagCorners[i]);
+            StarterProjectTag tag;
+            tag.tagId = mTagIds[i];
+            tag.closenessMetric = metric;
+            // Normalize the centers to that (0,0) is in the center of the image, rather than the top left corner
+            // The values will be between -1 and 1
+            tag.xTagCenterPixel =(center.first - image->image.cols/2)/image->image.cols;
+            tag.yTagCenterPixel = (center.second - image->image.rows/2)/image->image.rows;
+            tags.push_back(tag);
+        }
     }
 
-    StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) {
-        // TODO: remove below & implement me!
-        (void) tags;
 
-        return {};
+    StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) {
+        float current_min = (tags[0].xTagCenterPixel * tags[0].xTagCenterPixel) + (tags[0].yTagCenterPixel * tags[0].yTagCenterPixel);
+        StarterProjectTag current_min_tag = tags[0];
+        for(int i = 1; i < tags.size(); ++i){
+            float distance = (tags[i].xTagCenterPixel * tags[i].xTagCenterPixel) + (tags[i].yTagCenterPixel * tags[i].yTagCenterPixel);
+            if(distance < current_min){
+                current_min = distance;
+                current_min_tag = tags[i];
+            }
+        }
+        return current_min_tag;
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
-        // TODO: remove below & implement me!
-        (void) tag;
+        mTagPublisher.publish(tag);
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) {
@@ -70,18 +88,37 @@ namespace mrover {
         // hint: this will be used later by navigation to stop "close enough" to a tag. units are your choice!
         // hint: do not overcomplicate, this metric does not have to be perfectly accurate, it just has to be correlated with distance away
 
-        // TODO: remove below & implement me!
-        (void) image;
-        (void) tagCorners;
+        // Find the area of the tag
+        // tagCorners goes clockwise starting from top left
+        // 0 is right in front of tag and 1 is farthest away
+        float top_left_x = tagCorners[0].x;
+        float top_right_x = tagCorners[1].x;
+        float top_right_y = tagCorners[1].y;
+        float bottom_right_y = tagCorners[2].y;
 
-        return {};
+        float width_tag = abs(top_right_x - top_left_x);
+        float height_tag = abs(top_right_y - top_left_x); 
+        float area_tag = width_tag*height_tag;
+
+        float area_img = image.rows*image.cols;
+        // return ratio of how much of the image the tag takes up 
+        return 1-(area_tag/area_img); 
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) {
-        // TODO: remove below & implement me!
-        (void) tagCorners;
+        // Add up all the x and y coordinates and find their average (the middle)
+        int x_sum = 0;
+        int y_sum = 0;
+        for(auto c : tagCorners){
+            x_sum += c.x;
+            y_sum += c.y;
+        }
+        x_sum /= 4;
+        y_sum /= 4;
 
-        return {};
+        std::pair <float, float> result (x_sum, y_sum);
+
+        return result;
     }
 
 } // namespace mrover

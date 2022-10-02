@@ -20,6 +20,8 @@ class Localization:
     def __init__(self):
         # create subscribers for GPS and IMU data, linking them to our callback functions
         # TODO
+        gps = rospy.Subscriber('/gps/fix', NavSatFix, self.gps_callback)
+        imu = rospy.Subscriber('/imu', Imu, self.imu_callback)
 
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
@@ -35,6 +37,13 @@ class Localization:
         that pose to the TF tree.
         """
         # TODO
+        # spherical, reference coords passed in 
+        coords = self.spherical_to_cartesian(np.array([msg.latitude, msg.longitude]),
+                                             np.array([42.2, -83.7]))
+        rospy.logerr(f"coordinates = {coords[0]}, {coords[1]}, {coords[2]}")
+        self.pose = SE3(position=coords.copy(), rotation=self.pose.rotation)
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
+
 
     def imu_callback(self, msg: Imu):
         """
@@ -43,6 +52,9 @@ class Localization:
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
         # TODO
+        self.pose = SE3.from_pos_quat(position=self.pose.position, quaternion=np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w]))
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
+
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -57,6 +69,12 @@ class Localization:
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
         # TODO
+        R = 6371000
+        y = -(R*(np.radians(spherical_coord[1])-np.radians(reference_coord[1]))*np.cos(np.radians(reference_coord[0])))
+        x = R*(np.radians(spherical_coord[0])-np.radians(reference_coord[0]))
+        z = 0
+        rospy.logerr(f"degrees = {spherical_coord[0]}, {spherical_coord[1]}, {reference_coord[0]}, {reference_coord[1]}")
+        return np.array([x,y,z])
 
 
 def main():

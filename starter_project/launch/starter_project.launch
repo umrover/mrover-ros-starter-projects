@@ -37,7 +37,7 @@
     Navigation
     ===========
   -->
-    <!-- <node name="nav" pkg="mrover" type="navigation_starter_project.py" />-->
+    <node name="nav" pkg="mrover" type="navigation_starter_project.py" />
 
   <!--
     ============
