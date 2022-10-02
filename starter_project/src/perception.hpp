@@ -19,12 +19,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <image_transport/image_transport.h>
 
-// TODO: band-aid fix until we figure out why CMake doesn't generate message first
-#if __has_include(<mrover/StarterProjectTag.h>)
 #include <mrover/StarterProjectTag.h>
-#else
-struct StarterProjectTag {};
-#endif
 
 namespace mrover {
 

@@ -51,7 +51,7 @@ namespace mrover {
         tags.clear(); // Clear old tags in output vector
 
         cv::aruco::detectMarkers(image->image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
-        for(int i = 0; i < mTagCorners.size(); ++i){
+        for(size_t i = 0; i < mTagCorners.size(); ++i){
             float metric = getClosenessMetricFromTagCorners(image->image, mTagCorners[i]);
             std::pair<float, float> center = getCenterFromTagCorners(mTagCorners[i]);
             StarterProjectTag tag;
@@ -67,9 +67,15 @@ namespace mrover {
 
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) {
+        if (tags.empty()) {
+            StarterProjectTag tag{};
+            tag.tagId = -1;
+            return tag;
+        }
+
         float current_min = (tags[0].xTagCenterPixel * tags[0].xTagCenterPixel) + (tags[0].yTagCenterPixel * tags[0].yTagCenterPixel);
         StarterProjectTag current_min_tag = tags[0];
-        for(int i = 1; i < tags.size(); ++i){
+        for(size_t i = 1; i < tags.size(); ++i){
             float distance = (tags[i].xTagCenterPixel * tags[i].xTagCenterPixel) + (tags[i].yTagCenterPixel * tags[i].yTagCenterPixel);
             if(distance < current_min){
                 current_min = distance;
@@ -94,7 +100,6 @@ namespace mrover {
         float top_left_x = tagCorners[0].x;
         float top_right_x = tagCorners[1].x;
         float top_right_y = tagCorners[1].y;
-        float bottom_right_y = tagCorners[2].y;
 
         float width_tag = abs(top_right_x - top_left_x);
         float height_tag = abs(top_right_y - top_left_x); 

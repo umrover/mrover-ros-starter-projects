@@ -81,7 +81,7 @@ void FiducialsNode::imageCallback(sensor_msgs::ImageConstPtr const& msg) {
 
         if (mPublishImages) {
             mImgPub.publish(mCvPtr->toImageMsg());
-        }
+        }>
 
         mSeqNum++;
     } catch (cv_bridge::Exception const& e) {
