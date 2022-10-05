@@ -1,4 +1,4 @@
-int32 id
-float32 x
-float32 y
-float32 dist
+int32 tagId
+float32 xTagCenterPixel
+float32 yTagCenterPixel
+float32 clossnessMetric

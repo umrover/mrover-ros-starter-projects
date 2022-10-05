@@ -3,23 +3,40 @@ from context import Context
 from geometry_msgs.msg import Twist
 
 class TagSeekState(BaseState):
+    ANGULAR_TOLERANCE = 0.3
+    DISTANCE_TOLERANCE = 0.99
+
     def __init__(self, context: Context):
         super().__init__(
             context,
-            #TODO: add outcomes
-            add_outcomes=["TODO"],
+            add_outcomes=['failure', 'working', 'success'],
         )
 
     def evaluate(self, ud):
-        #TODO: get the tag's location and properties
+        # get the tag's location and properties
+        tag = self.context.env.get_fid_data()
         
-        #TODO: if we don't have a tag: go to the Done State (with outcome 'failure')
+        # if we don't have a tag: go to the Done State (with outcome 'failure')
+        if tag is None:
+            return 'failure' 
 
-        #TODO: if we are within angular and distance tolerances: go to Done State (with outcome 'success')
+        # if we are within angular and distance tolerances: go to Done State (with outcome 'success')
+        if tag.clossnessMetric < self.DISTANCE_TOLERANCE and abs(tag.xTagCenterPixel) < self.ANGULAR_TOLERANCE:
+            return 'success'
+
+        # figure out the twist command to be applied to move rover to tag
+        linear_vel = [0, 0, 0]
+        if tag.clossnessMetric >= self.DISTANCE_TOLERANCE:
+            linear_vel = [1, 0, 0]
         
-        #TODO: figure out the twist command to be applied to move rover to tag
+        angular_vel = [0, 0, 0]
+        if abs(tag.xTagCenterPixel) >= self.ANGULAR_TOLERANCE:
+            angular_vel = [0, 0, tag.xTagCenterPixel]
+        
+        twist = Twist(linear_vel, angular_vel)
 
-        #TODO: send Twist command to rover
+        # send Twist command to rover
+        self.context.rover.send_drive_command(twist)
 
-        #TODO: stay in the TagSeekState (with outcome 'working')
-        pass
+        # stay in the TagSeekState (with outcome 'working')
+        return 'working'

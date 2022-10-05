@@ -49,39 +49,80 @@ namespace mrover {
 
         tags.clear(); // Clear old tags in output vector
 
-        // TODO: remove below & implement me!
-        (void) image;
+        cv::aruco::detectMarkers(image->image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+
+        for (size_t i = 0; i < mTagCorners.size(); i++) {
+            StarterProjectTag tag;
+            tag.tagId = mTagIds[i];
+            tag.clossnessMetric = getClosenessMetricFromTagCorners(image->image, mTagCorners[i]);
+            std::pair<float, float> center = getCenterFromTagCorners(mTagCorners[i]);
+
+            // Normalize center - (0,0) is top left, we want to make the center (0,0)
+            // Also, we want to return xTagCenterPixel & yTagCenterPixel as a proportion from the center of the image
+            // Between -1 & 1
+            tag.xTagCenterPixel = (center.first - image->image.cols/2) / image->image.cols;
+            tag.yTagCenterPixel = (center.second - image->image.rows/2) / image->image.rows;
+
+            tags.push_back(tag);
+        }
+    }
+
+    float getSquaredDistanceFromZero(const StarterProjectTag& tag) {
+        return (tag.xTagCenterPixel * tag.xTagCenterPixel) + (tag.yTagCenterPixel * tag.yTagCenterPixel);
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) {
-        // TODO: remove below & implement me!
-        (void) tags;
+        int indexOfClosestTag = 0;
+        float minDistance = getSquaredDistanceFromZero(tags[0]);
 
-        return {};
+        for (size_t i = 1; i < tags.size(); i++) {
+            if (getSquaredDistanceFromZero(tags[i]) < minDistance) {
+                minDistance = getSquaredDistanceFromZero(tags[i]);
+                indexOfClosestTag = i;
+            }
+        }
+
+        return tags[indexOfClosestTag];
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
-        // TODO: remove below & implement me!
-        (void) tag;
+        mTagPublisher.publish(tag);
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) {
+        // 0 means tag is right there, 1 means tag is far away
         // hint: think about how you can use the "image" parameter
         // hint: this will be used later by navigation to stop "close enough" to a tag. units are your choice!
         // hint: do not overcomplicate, this metric does not have to be perfectly accurate, it just has to be correlated with distance away
 
-        // TODO: remove below & implement me!
-        (void) image;
-        (void) tagCorners;
+        float maxX = tagCorners[0].x;
+        float minX = tagCorners[0].x;
 
-        return {};
+        for (size_t i = 1; i < tagCorners.size(); i++) {
+            if (tagCorners[i].x > maxX) maxX = tagCorners[i].x;
+            else if (tagCorners[i].x < minX) minX = tagCorners[i].x;
+        }
+
+        float widthOfTag = maxX - minX;
+
+        return 1 - (widthOfTag / (image.cols * 1.0));
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) {
-        // TODO: remove below & implement me!
-        (void) tagCorners;
+        float xCenter = 0;
+        float yCenter = 0;
 
-        return {};
+        // Accumulate x & y of corners
+        for (auto c : tagCorners) {
+            xCenter += c.x;
+            yCenter += c.y;
+        }
+
+        // Get average of x & y to get center coords
+        xCenter /= 4;
+        yCenter /= 4;
+
+        return std::make_pair(xCenter, yCenter);
     }
 
 } // namespace mrover

@@ -26,16 +26,35 @@ class Navigation(threading.Thread):
         self.name = "NavigationThread"
         self.state_machine = smach.StateMachine(outcomes=["terminated"])
         self.context = context
+
         self.sis = smach_ros.IntrospectionServer("", self.state_machine, "/SM_ROOT")
         self.sis.start()
+
         with self.state_machine:
-            #TODO: add DriveState and its transitions here
+            # add DriveState and its transitions here
+            self.state_machine.add(
+                "DriveState",
+                DriveState(self.context),
+                transitions={
+                    "driving_to_point": "DriveState",
+                    "reached_point": "TagSeekState"
+                }
+            )
             self.state_machine.add(
                 "DoneState",
                 DoneState(self.context),
                 transitions={"done": "DoneState"},
             )
-            #TODO: add TagSeekState and its transitions here
+            # add TagSeekState and its transitions here
+            self.state_machine.add(
+                "TagSeekState",
+                TagSeekState(self.context),
+                transitions={
+                    "failure": "TagSeekState",
+                    "success": "DoneState",
+                    "working": "TagSeekState"
+                }
+            )
             
     def run(self):
         self.state_machine.execute()
@@ -50,7 +69,8 @@ class Navigation(threading.Thread):
 
 
 def main():
-    # TODO: init a node called "navigation"
+    # init a node called "navigation"
+    rospy.init_node('navigation', log_level=rospy.DEBUG)
 
     # context and navigation objects
     context = Context()
