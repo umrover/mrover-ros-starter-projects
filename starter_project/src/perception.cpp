@@ -48,21 +48,53 @@ namespace mrover {
         // hint: write and use the "getCenterFromTagCorners" and "getClosenessMetricFromTagCorners" functions
 
         tags.clear(); // Clear old tags in output vector
+        cv::aruco::detectMarkers(image->image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+        //todo find closest
 
-        // TODO: remove below & implement me!
-        (void) image;
+        for(size_t i = 0; i < mTagCorners.size(); ++i){
+            StarterProjectTag tag;
+            tag.id = mTagIds[i];
+            float metric = getClosenessMetricFromTagCorners(image->image, mTagCorners[i]);
+            std::pair<float, float> center = getCenterFromTagCorners(mTagCorners[i]);
+            //center of image is now 0,0 bc of normalization
+            tag.x = (center.first - image->image.cols/2)/image->image.cols;
+            tag.y = (center.second - image->image.rows/2)/image->image.rows;
+            tag.dist = metric;
+            tags.push_back(tag);
+        }
+        std::cout << "SIZE1 " << tags.size() << "\n";
+
     }
 
     StarterProjectTag Perception::selectTag(std::vector<StarterProjectTag> const& tags) {
         // TODO: remove below & implement me!
-        (void) tags;
+        //(void) tags;
+        std::cout << "SIZE " << tags.size()  << "\n";
+        if(tags.size() < 1){
+            StarterProjectTag tag;
+            tag.x = -1;
+            tag.y = -1;
+            tag.dist = -1;
+            return tag;
+        }
+        StarterProjectTag min = tags[0];
+        float minDist = sqrt(((tags[0].x) * (tags[0].x)) + ((tags[0].y) * (tags[0].y)));;
+        for(size_t i = 1; i < tags.size(); ++i){
+            float dist = sqrt(((tags[i].x) * (tags[i].x)) + ((tags[i].y) * (tags[i].y)));
+            if (dist < minDist){
+                min = tags[i];
+                minDist = dist;
+            }
+        }
 
-        return {};
+        return min;
+
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
         // TODO: remove below & implement me!
-        (void) tag;
+        mTagPublisher.publish(tag);
+        
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) {
@@ -71,17 +103,31 @@ namespace mrover {
         // hint: do not overcomplicate, this metric does not have to be perfectly accurate, it just has to be correlated with distance away
 
         // TODO: remove below & implement me!
+        //stop when the size of the area of the tag gets to a certain size because that means it will be bigger when you get closer
         (void) image;
         (void) tagCorners;
+        float x_dist = abs(tagCorners[0].x - tagCorners[1].x);
+        float y_dist = abs(tagCorners[1].y - tagCorners[2].y);
+        float area = x_dist * y_dist;
 
-        return {};
+        float imageArea = image.rows * image.cols;
+        area/=imageArea;
+        //if return is 0 that means ar tag is right next ot camera
+        return 1-area;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) {
         // TODO: remove below & implement me!
-        (void) tagCorners;
+        //(void) tagCorners;
+        std::pair<float, float> center = {0,0};
+        for(cv::Point2f pt : tagCorners){
+            center.first += pt.x;
+            center.second += pt.y;
+        }
+        center.first /= 4;
+        center.second /= 4;
 
-        return {};
+        return center;
     }
 
 } // namespace mrover
