@@ -40,8 +40,8 @@ class Localization:
         """
         # TODO
 
-        ref = np.array([np.radians(42.2), np.radians(-83.7)])
-        point = np.array([np.radians(msg.latitude),np.radians(msg.longitude)])
+        ref = np.array([(42.2), (-83.7)])
+        point = np.array([(msg.latitude),(msg.longitude)])
         cartesian = self.spherical_to_cartesian(point, ref)
         self.pose = SE3(cartesian, self.pose.rotation)
         self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")

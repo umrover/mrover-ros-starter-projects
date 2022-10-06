@@ -33,7 +33,9 @@ class TagSeekState(BaseState):
         #TODO: send Twist command to rover
         twist = Twist()
         twist.angular = angular_vel
+        twist.angular.z = tag.x
         twist.linear = linear_vel
+        twist.linear.x = 1
         self.context.rover.send_drive_command(twist)
 
         #TODO: stay in the TagSeekState (with outcome 'working')
