@@ -49,7 +49,22 @@ namespace mrover {
         tags.clear(); // Clear old tags in output vector
 
         // TODO: remove below & implement me!
-        (void) image;
+        // extract aruco tags from image and place them into the tags vector
+
+        // detect markers and save corners and ids to mTagCorners and mTagIds
+        cv::aruco::detectMarkers(image, mTagDictionary, mTagCorners, mTagIds, mTagDetectorParams);
+
+        for (size_t i = 0; i < mTagCorners.size(); ++i) {
+            std::pair<float, float> center = Perception::getCenterFromTagCorners(mTagCorners[i]);
+            float closeness = Perception::getClosenessMetricFromTagCorners(image, mTagCorners[i]);
+            StarterProjectTag* tag = new StarterProjectTag;
+            tag->tagId = mTagIds.at(i);
+            tag->closenessMetric = closeness;
+            tag->xTagCenterPixel = center.first;
+            tag->yTagCenterPixel = center.second;
+
+            tags.push_back(*tag);
+        }
     }
 
     StarterProjectTag Perception::selectTag(cv::Mat const& image, std::vector<StarterProjectTag> const& tags) {
@@ -70,18 +85,20 @@ namespace mrover {
         // hint: this will be used later by navigation to stop "close enough" to a tag. units are your choice!
         // hint: do not overcomplicate, this metric does not have to be perfectly accurate, it just has to be correlated with distance away
 
-        // TODO: remove below & implement me!
-        (void) image;
-        (void) tagCorners;
+        // return the distance between image and rover
+        // we could try to 
 
         return {};
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) {
-        // TODO: remove below & implement me!
-        (void) tagCorners;
+        std::pair<float, float> center;
 
-        return {};
+        // given that the corners are in default order (start from top left, go counterclockwise)
+        center.first = (tagCorners.at(0).x + tagCorners.at(1).x) / 2.0;
+        center.second = (tagCorners.at(1).y + tagCorners.at(2).y) / 2.0;
+
+        return center;
     }
 
 } // namespace mrover
