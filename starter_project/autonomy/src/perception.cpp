@@ -57,13 +57,13 @@ namespace mrover {
         for (size_t i = 0; i < mTagCorners.size(); ++i) {
             std::pair<float, float> center = Perception::getCenterFromTagCorners(mTagCorners[i]);
             float closeness = Perception::getClosenessMetricFromTagCorners(image, mTagCorners[i]);
-            StarterProjectTag* tag = new StarterProjectTag;
-            tag->tagId = mTagIds.at(i);
-            tag->closenessMetric = closeness;
-            tag->xTagCenterPixel = center.first;
-            tag->yTagCenterPixel = center.second;
+            StarterProjectTag tag{};
+            tag.tagId = mTagIds.at(i);
+            tag.closenessMetric = closeness;
+            tag.xTagCenterPixel = center.first;
+            tag.yTagCenterPixel = center.second;
 
-            tags.push_back(*tag);
+            tags.push_back(tag);
         }
     }
 
