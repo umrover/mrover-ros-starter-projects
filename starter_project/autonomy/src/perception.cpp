@@ -68,16 +68,30 @@ namespace mrover {
     }
 
     StarterProjectTag Perception::selectTag(cv::Mat const& image, std::vector<StarterProjectTag> const& tags) {
-        // TODO: remove below & implement me!
-        (void) image;
-        (void) tags;
+        int w = image.size().width;
+        int h = image.size().height;
 
-        return {};
+        float wDeltaMin = MAXFLOAT;
+        float hDeltaMin = MAXFLOAT;
+        StarterProjectTag closestTagToCenter{};
+        
+
+        for (auto tag : tags) {
+            float wDelta = abs(w/2 - tag.xTagCenterPixel);
+            float hDelta = abs(h/2 - tag.yTagCenterPixel);
+
+            if (wDelta < wDeltaMin || hDelta < hDeltaMin) {
+                wDeltaMin = wDelta;
+                hDeltaMin = hDelta;
+                closestTagToCenter = tag;
+            }
+        }
+
+        return closestTagToCenter;
     }
 
     void Perception::publishTag(StarterProjectTag const& tag) {
-        // TODO: remove below & implement me!
-        (void) tag;
+        mTagPublisher.publish(tag);
     }
 
     float Perception::getClosenessMetricFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners) {
@@ -86,9 +100,15 @@ namespace mrover {
         // hint: do not overcomplicate, this metric does not have to be perfectly accurate, it just has to be correlated with distance away
 
         // return the distance between image and rover
-        // we could try to 
+        // use the formula f = pd/w, where f=focal length, p=apparent width in pixels,
+        // d=distance from image, and w=known width
+        // so d = fw/p
+        // ZED camera has a focal length of 12cm
+        // aruco tags are 20x20cm, per URC guidelines
 
-        return {};
+        float distance = 12 * 20 / (tagCorners.at(1).x - tagCorners.at(0).x);
+
+        return distance;
     }
 
     std::pair<float, float> Perception::getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners) {
@@ -100,5 +120,6 @@ namespace mrover {
 
         return center;
     }
+
 
 } // namespace mrover
