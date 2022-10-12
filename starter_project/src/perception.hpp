@@ -23,8 +23,7 @@
 #if __has_include(<mrover/StarterProjectTag.h>)
 #include <mrover/StarterProjectTag.h>
 #else
-struct StarterProjectTag {
-};
+struct StarterProjectTag {};
 #endif
 
 namespace mrover {
@@ -65,7 +64,7 @@ namespace mrover {
          * @param image Image
          * @param tags  Output vector of tags
          */
-        void findTagsInImage(cv::Mat const& image, std::vector<StarterProjectTag>& tags);
+        void findTagsInImage(cv_bridge::CvImagePtr const& image, std::vector<StarterProjectTag>& tags);
 
         /**
          * Publish our processed tag
@@ -89,15 +88,14 @@ namespace mrover {
          * @param tagCorners    4-tuple of tag pixel coordinates representing the corners
          * @return              2-tuple (x,y) approximate center in pixel space
          */
-        [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(std::vector<cv::Point2f> const& tagCorners);
+        [[nodiscard]] std::pair<float, float> getCenterFromTagCorners(cv::Mat const& image, std::vector<cv::Point2f> const& tagCorners);
 
         /**
-         *  Select the tag that is closest to the center of the image
          *
          * @param tags
          * @return
          */
-        [[nodiscard]] StarterProjectTag selectTag(cv::Mat const& image, std::vector<StarterProjectTag> const& tags);
+        [[nodiscard]] StarterProjectTag selectTag(std::vector<StarterProjectTag> const& tags);
     };
 
 } // namespace mrover

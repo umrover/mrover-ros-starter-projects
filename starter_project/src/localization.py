@@ -5,6 +5,7 @@ import numpy as np
 
 # library for interacting with ROS and TF tree
 import rospy
+import math
 import tf2_ros
 
 # ROS message types we need to use
@@ -13,6 +14,8 @@ from sensor_msgs.msg import NavSatFix, Imu
 # SE3 library for handling poses and TF tree
 from util.SE3 import SE3
 
+CIRCUMFERENCE = 6371000.0
+REFERENCE_POINT = np.array([42.2, -83.7, 0])
 
 class Localization:
     pose: SE3
@@ -21,6 +24,9 @@ class Localization:
         # create subscribers for GPS and IMU data, linking them to our callback functions
         # TODO
 
+        gps_sub = rospy.Subscriber("/gps/fix", NavSatFix, self.gps_callback)
+        imu_sub = rospy.Subscriber("/imu", Imu, self.imu_callback)
+
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
 
@@ -28,13 +34,17 @@ class Localization:
         self.pose = SE3()
 
     def gps_callback(self, msg: NavSatFix):
-        """
+        """  
         This function will be called every time this node receives a NavSatFix message
         on the /gps topic. It should read the GPS location from the given NavSatFix message,
         convert it to cartesian coordiantes, store that value in `self.pose`, then publish
         that pose to the TF tree.
         """
         # TODO
+        spherical = np.array([msg.latitude, msg.longitude])
+        #self.pose = SE3(position = self.spherical_to_cartesian(spherical, REFERENCE_POINT).copy())
+        self.pose = SE3.from_pos_quat(position = self.spherical_to_cartesian(spherical, REFERENCE_POINT).copy(), quaternion=self.pose.rotation.quaternion)
+        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
 
     def imu_callback(self, msg: Imu):
         """
@@ -43,7 +53,11 @@ class Localization:
         store that value in `self.pose`, then publish that pose to the TF tree.
         """
         # TODO
+        q = np.array([msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w])
+        self.pose = SE3.from_pos_quat(position = self.pose.position, quaternion = q)
+        SE3.publish_to_tf_tree(self.pose, self.tf_broadcaster, "map", "base_link")
 
+    #TODO: Convert reference and spherical into radians
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
         """
@@ -57,6 +71,11 @@ class Localization:
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
         # TODO
+        cosineArr = np.cos(np.radians(reference_coord[0]))
+        cartesian = np.array([0.0,0.0,0.0])
+        cartesian[0] = CIRCUMFERENCE * (spherical_coord[0] - reference_coord[0]) * math.pi / 180.0
+        cartesian[1] = CIRCUMFERENCE * (spherical_coord[1] - reference_coord[1]) * cosineArr * math.pi / 180.0 *(-1)
+        return cartesian
 
 
 def main():

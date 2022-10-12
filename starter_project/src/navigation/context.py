@@ -1,5 +1,6 @@
 from __future__ import annotations
 from re import S
+from tokenize import Double
 import rospy
 import tf2_ros
 from geometry_msgs.msg import Twist
@@ -18,15 +19,17 @@ class Rover:
 
     def get_pose(self) -> Optional[SE3]:
         #TODO: return the pose of the rover (or None if we don't have one (catch exception))
-        pass
-
+        return SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
     def send_drive_command(self, twist: Twist):
         #TODO: send the twist message to the rover
-        pass
-
+        self.ctx.vel_cmd_publisher.publish(twist)
+        
     def send_drive_stop(self):
         #TODO: tell the rover to stop
-        pass
+        cmd = Twist()
+        cmd.linear.x = 0
+        cmd.angular.z = 0
+        self.ctx.vel_cmd_publisher.publish(cmd)
 
 @dataclass
 class Environment:
@@ -37,6 +40,7 @@ class Environment:
 
     ctx: Context
     fid_pos: Optional[np.ndarray]
+    ar_msg = StarterProjectTag()
 
     def get_fid_data(self) -> Optional[StarterProjectTag]:
         """
@@ -44,12 +48,11 @@ class Environment:
         if it exists, otherwise returns None (hint: you will need to create an additonal instance variable in the class)
         """
         #TODO:
-        pass
-        
+        return self.ar_msg
 
     def recieve_fid_data(self, message : StarterProjectTag):
         #TODO: (fill in the correct type for message) and handle incoming FID data messages here
-        pass
+        self.ar_msg = message
         
 
 
