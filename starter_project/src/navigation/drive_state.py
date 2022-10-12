@@ -20,11 +20,11 @@ class DriveState(BaseState):
         if SE3_pose == None:
             return "driving_to_point"
         #TODO: get the drive command (and completion status) based on target and pose (HINT: use get_drive_command())
-        get_drive = get_drive_command(target, SE3_pose, 1.0, 0.2)
+        get_drive = get_drive_command(target, SE3_pose, 0.7, 0.2) # returns twist, bool
         #TODO: if we are finished getting to the target, return with outcome "reached_point"
         #rospy.logerr(f"completion_status = {get_drive[1]}")
         if get_drive[1]:
-            self.context.rover.send_drive_stop()
+            #self.context.rover.send_drive_stop()
             return "reached_point"
         #TODO: send the drive command to the rover
         else:

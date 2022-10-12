@@ -40,7 +40,7 @@ class Localization:
         # spherical, reference coords passed in 
         coords = self.spherical_to_cartesian(np.array([msg.latitude, msg.longitude]),
                                              np.array([42.2, -83.7]))
-        rospy.logerr(f"coordinates = {coords[0]}, {coords[1]}, {coords[2]}")
+        #rospy.logerr(f"coordinates = {coords[0]}, {coords[1]}, {coords[2]}")
         self.pose = SE3(position=coords.copy(), rotation=self.pose.rotation)
         self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
@@ -73,7 +73,7 @@ class Localization:
         y = -(R*(np.radians(spherical_coord[1])-np.radians(reference_coord[1]))*np.cos(np.radians(reference_coord[0])))
         x = R*(np.radians(spherical_coord[0])-np.radians(reference_coord[0]))
         z = 0
-        rospy.logerr(f"degrees = {spherical_coord[0]}, {spherical_coord[1]}, {reference_coord[0]}, {reference_coord[1]}")
+        #rospy.logerr(f"degrees = {spherical_coord[0]}, {spherical_coord[1]}, {reference_coord[0]}, {reference_coord[1]}")
         return np.array([x,y,z])
 
 

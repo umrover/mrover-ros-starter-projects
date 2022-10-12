@@ -72,7 +72,6 @@ namespace mrover {
             tag.tagId = -1;
             return tag;
         }
-
         float current_min = (tags[0].xTagCenterPixel * tags[0].xTagCenterPixel) + (tags[0].yTagCenterPixel * tags[0].yTagCenterPixel);
         StarterProjectTag current_min_tag = tags[0];
         for(size_t i = 1; i < tags.size(); ++i){

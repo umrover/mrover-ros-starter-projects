@@ -46,7 +46,7 @@ class Navigation(threading.Thread):
             self.state_machine.add(
                 "TagSeekState",
                 TagSeekState(self.context),
-                transitions={"working": "TagSeekState", "success": "DoneState", "failure": "DoneState"},
+                transitions={"working": "TagSeekState", "success": "DoneState", "failure": "TagSeekState"},
             )
             
     def run(self):
