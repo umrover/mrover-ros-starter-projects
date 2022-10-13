@@ -61,6 +61,21 @@ class Localization:
         :returns: the approximated cartesian coordinates in meters, given as a numpy array [x, y, z]
         """
         # TODO
+        circumference = 6371000
+        cartesian = np.zeros(1, 3)
+        cartCoords = np.full((spherical_coord.size, 3), 0)
+        # xcoord: circumference * (spherical lat - reference lat)
+        # ycoord: circumference * (spherical lon - reference lon) * cos(reference lat)
+        # zcoord: 0
+
+        for id, latLong in enumerate(spherical_coord):
+            cartesian[0] = circumference * (latLong[0] - reference_coord[id][0])
+            cartesian[1] = circumference * (latLong[1] - reference_coord[id][1]) * np.cos(np.pi/180 * reference_coord[id][0])
+            cartCoords[2] = 0
+        
+        return cartCoords
+
+
 
 
 def main():
