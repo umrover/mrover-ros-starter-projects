@@ -38,6 +38,13 @@ class Localization:
         """
         # TODO
         print(msg)
+        lat = msg.latitude
+        lon = msg.longitude
+        refLat = 42.2
+        refLon = -83.7
+        cartesian = self.spherical_to_cartesian(np.array({lat, lon}), np.array({refLat, refLon}))
+        self.pose.position = cartesian
+        self.pose.publish_to_tf_tree(self.tf_broadcaster, "map", "base_link")
 
     def imu_callback(self, msg: Imu):
         """
@@ -47,6 +54,9 @@ class Localization:
         """
         # TODO
         print(msg)
+        rot = msg.orientation
+        self.pose.rotation = rot
+        self.pose.publish_to_tf_tree()
 
     @staticmethod
     def spherical_to_cartesian(spherical_coord: np.ndarray, reference_coord: np.ndarray) -> np.ndarray:
@@ -62,20 +72,16 @@ class Localization:
         """
         # TODO
         circumference = 6371000
-        cartesian = np.zeros(1, 3)
-        cartCoords = np.full((spherical_coord.size, 3), 0)
+        cartesian = np.zeros(3)
         # xcoord: circumference * (spherical lat - reference lat)
         # ycoord: circumference * (spherical lon - reference lon) * cos(reference lat)
         # zcoord: 0
 
-        for id, latLong in enumerate(spherical_coord):
-            cartesian[0] = circumference * (latLong[0] - reference_coord[id][0])
-            cartesian[1] = circumference * (latLong[1] - reference_coord[id][1]) * np.cos(np.pi/180 * reference_coord[id][0])
-            cartCoords[2] = 0
+        cartesian[0] = circumference * (spherical_coord[0] - reference_coord[0])
+        cartesian[1] = circumference * (spherical_coord[1] - reference_coord[1]) * np.cos(np.pi/180 * reference_coord[0])
+        cartesian[2] = 0
         
-        return cartCoords
-
-
+        return cartesian
 
 
 def main():
