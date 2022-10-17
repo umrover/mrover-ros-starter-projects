@@ -1,4 +1,5 @@
 from __future__ import annotations
+from curses.ascii import FF
 from re import S
 import rospy
 import tf2_ros
@@ -18,15 +19,21 @@ class Rover:
 
     def get_pose(self) -> Optional[SE3]:
         #TODO: return the pose of the rover (or None if we don't have one (catch exception))
-        pass
+        try:
+            toReturn = SE3()
+            toReturn.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
+            return toReturn
+        except:
+            return None
 
     def send_drive_command(self, twist: Twist):
         #TODO: send the twist message to the rover
-        pass
+        self.ctx.vel_cmd_publisher.publish(twist)
 
     def send_drive_stop(self):
         #TODO: tell the rover to stop
-        pass
+        message = Twist(linear=0, angular=0)
+        self.send_drive_command(message)
 
 @dataclass
 class Environment:
