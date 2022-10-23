@@ -1,5 +1,6 @@
 from abc import ABC
 from typing import List
+from navigation.drive import get_drive_command
 
 import smach
 from context import Context
@@ -59,3 +60,22 @@ class DoneState(BaseState):
         cmd_vel = Twist()
         self.context.rover.send_drive_command(cmd_vel)
         return "done"
+
+
+class DriveState(BaseState):
+    def __init__(self, context: Context):
+        super().__init__(
+            context,
+            add_outcomes=["drive", "done"],
+        )
+    
+    def evaluate(self):
+        # move rover to 5, 5
+        dc = get_drive_command([5, 5], self.context.rover.get_pose(), 0.0, 0.0)
+        if not dc[1]:
+            self.context.rover.send_drive_command(dc[0])
+            return "drive"
+        else:
+            return "done"
+
+
