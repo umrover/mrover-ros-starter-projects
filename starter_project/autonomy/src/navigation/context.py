@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ctypes.wintypes import tagMSG
 from curses.ascii import FF
 from re import S
 import rospy
@@ -20,9 +21,7 @@ class Rover:
     def get_pose(self) -> Optional[SE3]:
         #TODO: return the pose of the rover (or None if we don't have one (catch exception))
         try:
-            toReturn = SE3()
-            toReturn.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
-            return toReturn
+            return SE3.from_tf_tree(self.ctx.tf_buffer, "map", "base_link")
         except:
             return None
 
@@ -43,20 +42,26 @@ class Environment:
     """
 
     ctx: Context
-    fid_pos: Optional[np.ndarray]
+    tagMsg: StarterProjectTag
 
     def get_fid_data(self) -> Optional[StarterProjectTag]:
         """
         Retrieves the last recieved message regarding fid pose
         if it exists, otherwise returns None (hint: you will need to create an additonal instance variable in the class)
+
+        fiducial == tag
         """
-        #TODO:
-        pass
+        # #TODO:
+        # pass
+        return self.tagMsg
         
 
     def recieve_fid_data(self, message : StarterProjectTag):
-        #TODO: (fill in the correct type for message) and handle incoming FID data messages here
-        pass
+        # #TODO: (fill in the correct type for message) and handle incoming FID data messages here
+        # pass
+
+        self.tagMsg = message
+
         
 
 
