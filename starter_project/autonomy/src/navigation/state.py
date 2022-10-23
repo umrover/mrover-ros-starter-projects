@@ -79,3 +79,21 @@ class DriveState(BaseState):
             return "done"
 
 
+class TagSeekState(BaseState):
+    def __init__(self, context: Context):
+        super().__init__(
+            context,
+            add_outcomes=["tagseek", "done"],
+        )
+    
+    def evaluate(self):
+        # move rover to tag location
+        tagMsg = self.context.env.get_fid_data()
+        tagCloseness = tagMsg.closenessMetric
+
+        dc = get_drive_command([5, 5], self.context.rover.get_pose(), tagCloseness, 0.0)
+        if not dc[1]:
+            self.context.rover.send_drive_command(dc[0])
+            return "tagseek"
+        else:
+            return "done"
