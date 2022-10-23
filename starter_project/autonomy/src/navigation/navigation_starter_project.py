@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-
-from platform import node
 import signal
 import sys
 import threading
