@@ -67,6 +67,19 @@ namespace mrover {
 
     StarterProjectTag Perception::selectTag(cv::Mat const& image, std::vector<StarterProjectTag> const& tags) {
         // TODO: remove below & implement me!
+
+        if(tags.size() == 0){
+            mrover::StarterProjectTag tag;
+            tag.tagId = 0;
+            tag.xTagCenterPixel = 0.0;
+            tag.yTagCenterPixel = 0.0;
+            tag.closenessMetric = 0.0;
+
+            return tag;
+        }
+
+
+
         float widthcenter = image.cols/2;
         float heightcenter = image.rows/2;
         cv::Point2f center(widthcenter,heightcenter);
@@ -122,6 +135,10 @@ namespace mrover {
         for(auto &point :tagCorners){
             xsum+=point.x;
             ysum+=point.y;
+        }
+
+        if(tags == 0){
+            tags == 1;
         }
 
         return {xsum/tags,ysum/tags};

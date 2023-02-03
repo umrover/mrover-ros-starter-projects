@@ -19,7 +19,9 @@ class Localization:
 
     def __init__(self):
         # create subscribers for GPS and IMU data, linking them to our callback functions
-        # TODO
+        rospy.Subscriber('/gps/fix','NavSatFix.msg','gps_callback')
+        rospy.Subscriber('/lab','Imu.msg','imu_callback')
+
 
         # create a transform broadcaster for publishing to the TF tree
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
