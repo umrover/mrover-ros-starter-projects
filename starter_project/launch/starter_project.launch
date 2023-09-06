@@ -36,9 +36,10 @@
     ===========
     Navigation
     ===========
-  -->
+  
     <node name="nav" pkg="mrover" type="navigation_starter_project.py" />
-
+  -->
+  
   <!--
     ============
     Localization
